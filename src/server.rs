@@ -33,6 +33,7 @@ struct Session {
 
 /// A tunneled channel
 #[derive(Debug)]
+#[allow(dead_code)]
 struct Channel {
     tx: mpsc::Sender<Vec<u8>>,
     _task: tokio::task::JoinHandle<()>,

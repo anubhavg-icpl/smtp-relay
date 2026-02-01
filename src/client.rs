@@ -20,6 +20,7 @@ pub struct Client {
 
 /// Client connection state
 #[derive(Debug)]
+#[allow(dead_code)]
 struct ClientState {
     connected: bool,
     next_channel_id: u16,
@@ -28,6 +29,7 @@ struct ClientState {
 
 /// A tunneled channel
 #[derive(Debug)]
+#[allow(dead_code)]
 struct Channel {
     _tx: tokio::sync::mpsc::Sender<Vec<u8>>,
     connected: bool,
