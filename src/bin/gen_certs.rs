@@ -37,8 +37,8 @@ fn main() -> Result<()> {
     // Use default algorithm (PKCS_RSA_SHA256)
     let alg = &rcgen::PKCS_RSA_SHA256;
 
-    // Generate CA key pair
-    let ca_key = KeyPair::generate(alg)?;
+    // Generate CA key pair (used for signing)
+    let _ca_key = KeyPair::generate(alg)?;
 
     // Generate CA certificate
     let mut ca_params = CertificateParams::new(vec!["SMTP Tunnel CA".to_string()]);
