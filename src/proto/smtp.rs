@@ -82,17 +82,17 @@ pub struct Response;
 
 impl Response {
     /// Create a simple response
-    pub fn new(code: ResponseCode, message: &str) -> String {
+    pub fn simple(code: ResponseCode, message: &str) -> String {
         format!("{code} {message}\r\n")
     }
 
     /// Create a multi-line response (last line has space after code)
     pub fn multi_line(code: ResponseCode, lines: &[&str]) -> String {
         if lines.is_empty() {
-            return Self::new(code, "");
+            return Self::simple(code, "");
         }
         if lines.len() == 1 {
-            return Self::new(code, lines[0]);
+            return Self::simple(code, lines[0]);
         }
 
         let mut result = String::new();
@@ -108,7 +108,7 @@ impl Response {
 
     /// Greeting response
     pub fn greeting(hostname: &str) -> String {
-        Self::new(
+        Self::simple(
             ResponseCode::READY,
             &format!("{hostname} ESMTP Postfix (Ubuntu)"),
         )
@@ -127,12 +127,12 @@ impl Response {
 
     /// STARTTLS response
     pub fn starttls() -> String {
-        Self::new(ResponseCode::READY, "2.0.0 Ready to start TLS")
+        Self::simple(ResponseCode::READY, "2.0.0 Ready to start TLS")
     }
 
     /// Auth success
     pub fn auth_success() -> String {
-        Self::new(
+        Self::simple(
             ResponseCode::AUTH_SUCCESS,
             "2.7.0 Authentication successful",
         )
@@ -140,37 +140,37 @@ impl Response {
 
     /// Auth failed
     pub fn auth_failed() -> String {
-        Self::new(ResponseCode::AUTH_FAILED, "5.7.8 Authentication failed")
+        Self::simple(ResponseCode::AUTH_FAILED, "5.7.8 Authentication failed")
     }
 
     /// Binary mode activated
     pub fn binary_mode() -> String {
-        Self::new(ResponseCode::BINARY_MODE, "Binary mode activated")
+        Self::simple(ResponseCode::BINARY_MODE, "Binary mode activated")
     }
 
     /// Goodbye
     pub fn goodbye() -> String {
-        Self::new(ResponseCode::CLOSING, "Bye")
+        Self::simple(ResponseCode::CLOSING, "Bye")
     }
 
     /// Syntax error
     pub fn syntax_error() -> String {
-        Self::new(ResponseCode::SYNTAX_ERROR, "Syntax error")
+        Self::simple(ResponseCode::SYNTAX_ERROR, "Syntax error")
     }
 
     /// Command not recognized
     pub fn command_unrecognized() -> String {
-        Self::new(ResponseCode::COMMAND_UNRECOGNIZED, "Command not recognized")
+        Self::simple(ResponseCode::COMMAND_UNRECOGNIZED, "Command not recognized")
     }
 
     /// Bad sequence
     pub fn bad_sequence() -> String {
-        Self::new(ResponseCode::BAD_SEQUENCE, "Bad sequence of commands")
+        Self::simple(ResponseCode::BAD_SEQUENCE, "Bad sequence of commands")
     }
 
     /// Auth required
     pub fn auth_required() -> String {
-        Self::new(ResponseCode::AUTH_REQUIRED, "Authentication required")
+        Self::simple(ResponseCode::AUTH_REQUIRED, "Authentication required")
     }
 }
 
