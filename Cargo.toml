@@ -2,10 +2,10 @@
 name = "smtp-tunnel"
 version = "2.0.0"
 edition = "2021"
-authors = ["SMTP Tunnel Team"]
+authors = ["Anubhav Gain <anubhavg@infopercept.com>"]
 description = "High-speed covert tunnel that disguises TCP traffic as SMTP email communication"
 license = "MIT"
-repository = "https://github.com/yourusername/smtp-tunnel-rs"
+repository = "https://github.com/anubhavg-icpl/smtp-relay"
 keywords = ["smtp", "tunnel", "proxy", "socks5", "dpi-evasion"]
 categories = ["network-programming", "command-line-utilities"]
 

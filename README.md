@@ -4,6 +4,11 @@
 
 **Rust rewrite** of the original Python SMTP Tunnel Proxy with improved performance, memory safety, and smaller binaries.
 
+[![Author](https://img.shields.io/badge/Author-anubhavg--icpl-blue)](https://github.com/anubhavg-icpl)
+[![Email](https://img.shields.io/badge/Email-anubhavg%40infopercept.com-red)](mailto:anubhavg@infopercept.com)
+[![Version](https://img.shields.io/badge/Version-2.0.0-green)]()
+[![License](https://img.shields.io/badge/License-MIT-yellow)]()
+
 ---
 
 ## 🎯 Features
@@ -292,6 +297,14 @@ cross build --release --target x86_64-pc-windows-gnu
 ## 📝 License
 
 MIT License - See [LICENSE](LICENSE) file
+
+---
+
+## 👤 Author
+
+**Anubhav Gain** ([@anubhavg-icpl](https://github.com/anubhavg-icpl))
+- Email: [anubhavg@infopercept.com](mailto:anubhavg@infopercept.com)
+- Company: [InfoPercept Consulting Pvt Ltd](https://www.infopercept.com)
 
 ---
 
