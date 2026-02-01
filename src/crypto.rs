@@ -1,6 +1,6 @@
 //! Cryptography utilities for SMTP Tunnel
 
-use base64::{Engine as _, engine::general_purpose::STANDARD as BASE64};
+use base64::{engine::general_purpose::STANDARD as BASE64, Engine as _};
 use hmac::{Hmac, Mac};
 use sha2::Sha256;
 use std::collections::HashMap;
@@ -17,13 +17,13 @@ impl AuthToken {
     /// Format: base64(username:timestamp:hmac)
     pub fn generate(secret: &str, username: &str, timestamp: u64) -> String {
         let message = format!("smtp-tunnel-auth:{username}:{timestamp}");
-        let mut mac = HmacSha256::new_from_slice(secret.as_bytes())
-            .expect("HMAC can take key of any size");
+        let mut mac =
+            HmacSha256::new_from_slice(secret.as_bytes()).expect("HMAC can take key of any size");
         mac.update(message.as_bytes());
         let result = mac.finalize();
         let hmac_bytes = result.into_bytes();
         let hmac_b64 = BASE64.encode(&hmac_bytes);
-        
+
         let token = format!("{username}:{timestamp}:{hmac_b64}");
         BASE64.encode(token.as_bytes())
     }
@@ -64,7 +64,7 @@ impl AuthToken {
             .duration_since(UNIX_EPOCH)
             .unwrap()
             .as_secs();
-        
+
         if now.saturating_sub(timestamp) > max_age_secs {
             return (false, None);
         }
@@ -72,7 +72,11 @@ impl AuthToken {
         // Verify HMAC
         let expected = Self::generate(secret, username, timestamp);
         let valid = expected.as_bytes().len() == token_b64.as_bytes().len()
-            && expected.as_bytes().iter().zip(token_b64.as_bytes().iter()).all(|(a, b)| a == b);
+            && expected
+                .as_bytes()
+                .iter()
+                .zip(token_b64.as_bytes().iter())
+                .all(|(a, b)| a == b);
         if valid {
             (true, Some(username.to_string()))
         } else {
@@ -110,7 +114,7 @@ impl AuthToken {
             .duration_since(UNIX_EPOCH)
             .unwrap()
             .as_secs();
-        
+
         if now.saturating_sub(timestamp) > max_age_secs {
             return (false, None);
         }
@@ -124,7 +128,11 @@ impl AuthToken {
         // Verify HMAC
         let expected = Self::generate(&user.secret, username, timestamp);
         let valid = expected.as_bytes().len() == token_b64.as_bytes().len()
-            && expected.as_bytes().iter().zip(token_b64.as_bytes().iter()).all(|(a, b)| a == b);
+            && expected
+                .as_bytes()
+                .iter()
+                .zip(token_b64.as_bytes().iter())
+                .all(|(a, b)| a == b);
         if valid {
             (true, Some(username.to_string()))
         } else {
@@ -175,7 +183,7 @@ mod tests {
 
         let token = AuthToken::generate(secret, username, timestamp);
         let (valid, user) = AuthToken::verify(&token, secret, 300);
-        
+
         assert!(valid);
         assert_eq!(user, Some(username.to_string()));
     }
@@ -184,7 +192,7 @@ mod tests {
     fn test_token_wrong_secret() {
         let token = AuthToken::generate("correct-secret", "alice", 1234567890);
         let (valid, _) = AuthToken::verify(&token, "wrong-secret", 300);
-        
+
         assert!(!valid);
     }
 
@@ -193,11 +201,12 @@ mod tests {
         let old_timestamp = SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .unwrap()
-            .as_secs() - 1000;
-        
+            .as_secs()
+            - 1000;
+
         let token = AuthToken::generate("secret", "alice", old_timestamp);
         let (valid, _) = AuthToken::verify(&token, "secret", 300);
-        
+
         assert!(!valid);
     }
 }

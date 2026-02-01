@@ -31,10 +31,12 @@ async fn main() -> Result<()> {
     let args = Args::parse();
 
     // Initialize logging
-    let level = if args.debug { Level::DEBUG } else { Level::INFO };
-    let subscriber = FmtSubscriber::builder()
-        .with_max_level(level)
-        .finish();
+    let level = if args.debug {
+        Level::DEBUG
+    } else {
+        Level::INFO
+    };
+    let subscriber = FmtSubscriber::builder().with_max_level(level).finish();
     tracing::subscriber::set_global_default(subscriber)?;
 
     // Load config
@@ -46,9 +48,9 @@ async fn main() -> Result<()> {
     };
 
     // Load users
-    let users_file = args.users.unwrap_or_else(|| {
-        PathBuf::from(&config.server.users_file)
-    });
+    let users_file = args
+        .users
+        .unwrap_or_else(|| PathBuf::from(&config.server.users_file));
 
     let users = if users_file.exists() {
         UsersConfig::from_file(&users_file)?
@@ -70,7 +72,10 @@ async fn main() -> Result<()> {
 
     // Check TLS certificates
     if !std::path::Path::new(&config.server.cert_file).exists() {
-        eprintln!("Error: Certificate file not found: {}", config.server.cert_file);
+        eprintln!(
+            "Error: Certificate file not found: {}",
+            config.server.cert_file
+        );
         eprintln!("Generate certificates with: smtp-tunnel-gen-certs");
         std::process::exit(1);
     }

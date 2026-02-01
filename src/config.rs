@@ -114,15 +114,33 @@ pub struct Config {
 }
 
 // Default value functions
-fn default_host() -> String { "0.0.0.0".to_string() }
-fn default_port() -> u16 { 587 }
-fn default_socks_port() -> u16 { 1080 }
-fn default_socks_host() -> String { "127.0.0.1".to_string() }
-fn default_hostname() -> String { "mail.example.com".to_string() }
-fn default_cert_file() -> String { "server.crt".to_string() }
-fn default_key_file() -> String { "server.key".to_string() }
-fn default_users_file() -> String { "users.yaml".to_string() }
-fn default_true() -> bool { true }
+fn default_host() -> String {
+    "0.0.0.0".to_string()
+}
+fn default_port() -> u16 {
+    587
+}
+fn default_socks_port() -> u16 {
+    1080
+}
+fn default_socks_host() -> String {
+    "127.0.0.1".to_string()
+}
+fn default_hostname() -> String {
+    "mail.example.com".to_string()
+}
+fn default_cert_file() -> String {
+    "server.crt".to_string()
+}
+fn default_key_file() -> String {
+    "server.key".to_string()
+}
+fn default_users_file() -> String {
+    "users.yaml".to_string()
+}
+fn default_true() -> bool {
+    true
+}
 
 impl Config {
     /// Load configuration from file
@@ -295,7 +313,8 @@ client:
 
   # CA certificate for server verification (RECOMMENDED for security)
   ca_cert: "ca.crt"
-"#.to_string()
+"#
+    .to_string()
 }
 
 /// Generate example users file
@@ -315,5 +334,6 @@ users:
     secret: "another-secret-here"
     logging: true
     whitelist: []
-"#.to_string()
+"#
+    .to_string()
 }

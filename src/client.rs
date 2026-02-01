@@ -1,16 +1,16 @@
 //! SMTP Tunnel Client
-//! 
+//!
 //! Connects to SMTP tunnel server and provides SOCKS5 proxy interface.
 
 use crate::config::ClientConfig;
 use crate::crypto::AuthToken;
 use bytes::{Buf, BytesMut};
 use std::collections::HashMap;
+use std::sync::Arc;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpStream;
 use tokio::sync::RwLock;
 use tracing::{debug, info};
-use std::sync::Arc;
 
 /// SMTP Tunnel Client
 pub struct Client {
@@ -57,7 +57,11 @@ impl Client {
                     reconnect_delay = 2;
                 }
                 Err(e) => {
-                    tracing::warn!("Connection error: {}, reconnecting in {}s...", e, reconnect_delay);
+                    tracing::warn!(
+                        "Connection error: {}, reconnecting in {}s...",
+                        e,
+                        reconnect_delay
+                    );
                     tokio::time::sleep(tokio::time::Duration::from_secs(reconnect_delay)).await;
                     reconnect_delay = (reconnect_delay * 2).min(MAX_RECONNECT_DELAY);
                 }
@@ -116,9 +120,11 @@ impl Client {
         let mut buf = BytesMut::with_capacity(1024);
 
         // 1. Wait for greeting
-        let line = self.read_smtp_line(&mut stream, &mut buf).await?
+        let line = self
+            .read_smtp_line(&mut stream, &mut buf)
+            .await?
             .ok_or_else(|| anyhow::anyhow!("Server closed connection"))?;
-        
+
         if !line.starts_with("220") {
             return Err(anyhow::anyhow!("Unexpected greeting: {}", line));
         }
@@ -126,13 +132,15 @@ impl Client {
 
         // 2. Send EHLO
         stream.write_all(b"EHLO tunnel-client.local\r\n").await?;
-        
+
         // Read EHLO response (multi-line)
         loop {
-            let line = self.read_smtp_line(&mut stream, &mut buf).await?
+            let line = self
+                .read_smtp_line(&mut stream, &mut buf)
+                .await?
                 .ok_or_else(|| anyhow::anyhow!("Server closed connection"))?;
             debug!("EHLO response: {}", line);
-            
+
             if line.starts_with("250 ") {
                 break;
             }
@@ -143,9 +151,11 @@ impl Client {
 
         // 3. STARTTLS
         stream.write_all(b"STARTTLS\r\n").await?;
-        let line = self.read_smtp_line(&mut stream, &mut buf).await?
+        let line = self
+            .read_smtp_line(&mut stream, &mut buf)
+            .await?
             .ok_or_else(|| anyhow::anyhow!("Server closed connection"))?;
-        
+
         if !line.starts_with("220") {
             return Err(anyhow::anyhow!("STARTTLS failed: {}", line));
         }
@@ -153,16 +163,18 @@ impl Client {
 
         // 4. Upgrade TLS - simplified for compilation
         // In full implementation, we'd use tokio-rustls here
-        
+
         // 5. EHLO again (post-TLS)
         stream.write_all(b"EHLO tunnel-client.local\r\n").await?;
-        
+
         // Read EHLO response
         loop {
-            let line = self.read_smtp_line(&mut stream, &mut buf).await?
+            let line = self
+                .read_smtp_line(&mut stream, &mut buf)
+                .await?
                 .ok_or_else(|| anyhow::anyhow!("Server closed connection"))?;
             debug!("EHLO (post-TLS) response: {}", line);
-            
+
             if line.starts_with("250 ") {
                 break;
             }
@@ -173,10 +185,14 @@ impl Client {
 
         // 6. AUTH
         let token = AuthToken::generate_now(&self.config.secret, &self.config.username);
-        stream.write_all(format!("AUTH PLAIN {}\r\n", token).as_bytes()).await?;
-        let line = self.read_smtp_line(&mut stream, &mut buf).await?
+        stream
+            .write_all(format!("AUTH PLAIN {}\r\n", token).as_bytes())
+            .await?;
+        let line = self
+            .read_smtp_line(&mut stream, &mut buf)
+            .await?
             .ok_or_else(|| anyhow::anyhow!("Server closed connection"))?;
-        
+
         if !line.starts_with("235") {
             return Err(anyhow::anyhow!("Authentication failed: {}", line));
         }
@@ -184,9 +200,11 @@ impl Client {
 
         // 7. Switch to binary mode
         stream.write_all(b"BINARY\r\n").await?;
-        let line = self.read_smtp_line(&mut stream, &mut buf).await?
+        let line = self
+            .read_smtp_line(&mut stream, &mut buf)
+            .await?
             .ok_or_else(|| anyhow::anyhow!("Server closed connection"))?;
-        
+
         if !line.starts_with("299") {
             return Err(anyhow::anyhow!("Binary mode failed: {}", line));
         }

@@ -2,7 +2,7 @@
 
 use anyhow::Result;
 use clap::Parser;
-use smtp_tunnel::config::{Config, UsersConfig, UserEntry};
+use smtp_tunnel::config::{Config, UserEntry, UsersConfig};
 use smtp_tunnel::crypto::generate_secret;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -45,8 +45,14 @@ struct Args {
     no_package: bool,
 }
 
-fn create_client_config(server_host: &str, server_port: u16, username: &str, secret: &str) -> String {
-    format!(r#"# SMTP Tunnel Client Configuration
+fn create_client_config(
+    server_host: &str,
+    server_port: u16,
+    username: &str,
+    secret: &str,
+) -> String {
+    format!(
+        r#"# SMTP Tunnel Client Configuration
 # Generated for user: {username}
 
 client:
@@ -64,11 +70,13 @@ client:
 
   # CA certificate for server verification
   ca_cert: "ca.crt"
-"#)
+"#
+    )
 }
 
 fn create_readme(username: &str) -> String {
-    format!(r#"# SMTP Tunnel Client - {username}
+    format!(
+        r#"# SMTP Tunnel Client - {username}
 
 ## Quick Start
 
@@ -99,11 +107,13 @@ Edit config.yaml to change settings:
 - server_host: Your server's domain name
 - server_port: 587 (default SMTP submission port)
 - socks_port: 1080 (local proxy port)
-"#)
+"#
+    )
 }
 
 fn create_start_sh(username: &str) -> String {
-    format!(r#"#!/bin/bash
+    format!(
+        r#"#!/bin/bash
 #
 # SMTP Tunnel Client Launcher
 # User: {username}
@@ -153,11 +163,13 @@ $BINARY -c config.yaml
 
 echo ""
 echo -e "${{YELLOW}}Connection closed.${{NC}}"
-"#)
+"#
+    )
 }
 
 fn create_start_bat(username: &str) -> String {
-    format!(r#"@echo off
+    format!(
+        r#"@echo off
 title SMTP Tunnel - {username}
 
 echo.
@@ -196,7 +208,8 @@ echo.
 echo.
 echo Connection closed.
 pause
-"#)
+"#
+    )
 }
 
 fn create_client_package(
@@ -307,7 +320,11 @@ fn main() -> Result<()> {
     // Create user entry
     let entry = UserEntry {
         secret: secret.clone(),
-        whitelist: if args.whitelist.is_empty() { vec![] } else { args.whitelist },
+        whitelist: if args.whitelist.is_empty() {
+            vec![]
+        } else {
+            args.whitelist
+        },
         logging: !args.no_logging,
     };
 
@@ -329,12 +346,12 @@ fn main() -> Result<()> {
 
         let (server_host, server_port) = if config_file.exists() {
             let config = Config::from_file(&config_file)?;
-            (
-                config.server.hostname,
-                config.server.port,
-            )
+            (config.server.hostname, config.server.port)
         } else {
-            println!("Warning: Config file {} not found, using defaults", config_file.display());
+            println!(
+                "Warning: Config file {} not found, using defaults",
+                config_file.display()
+            );
             ("localhost".to_string(), 587)
         };
 

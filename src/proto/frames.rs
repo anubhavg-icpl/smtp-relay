@@ -88,7 +88,11 @@ impl Frame {
 
     /// Create a CONNECT_FAIL frame
     pub fn connect_fail(channel_id: u16, reason: &str) -> Self {
-        Self::new(FrameType::ConnectFail, channel_id, Bytes::copy_from_slice(reason.as_bytes()))
+        Self::new(
+            FrameType::ConnectFail,
+            channel_id,
+            Bytes::copy_from_slice(reason.as_bytes()),
+        )
     }
 
     /// Create a CLOSE frame
@@ -167,8 +171,8 @@ impl Decoder for FrameCodec {
         let payload_len = u16::from_be_bytes([src[3], src[4]]) as usize;
 
         // Validate frame type
-        let frame_type = FrameType::from_u8(frame_type)
-            .ok_or(FrameError::InvalidType(frame_type))?;
+        let frame_type =
+            FrameType::from_u8(frame_type).ok_or(FrameError::InvalidType(frame_type))?;
 
         // Check payload size
         if payload_len > MAX_PAYLOAD_SIZE {
@@ -206,11 +210,11 @@ mod tests {
     fn test_frame_serialize_parse() {
         let frame = Frame::connect(42, "example.com", 443);
         let serialized = frame.serialize();
-        
+
         let mut codec = FrameCodec;
         let mut buf = BytesMut::from(&serialized[..]);
         let decoded = codec.decode(&mut buf).unwrap().unwrap();
-        
+
         assert_eq!(decoded.frame_type, FrameType::Connect);
         assert_eq!(decoded.channel_id, 42);
         let (host, port) = decoded.parse_connect().unwrap();
@@ -222,13 +226,13 @@ mod tests {
     fn test_frame_codec_partial() {
         let mut codec = FrameCodec;
         let mut buf = BytesMut::from(&[0x01, 0x00, 0x01, 0x00, 0x05][..]); // Incomplete
-        
+
         assert!(codec.decode(&mut buf).unwrap().is_none());
-        
+
         // Add rest of payload
         buf.extend_from_slice(b"hello");
         let decoded = codec.decode(&mut buf).unwrap().unwrap();
-        
+
         assert_eq!(decoded.frame_type, FrameType::Data);
         assert_eq!(decoded.channel_id, 1);
         assert_eq!(&decoded.payload[..], b"hello");

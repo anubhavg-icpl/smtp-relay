@@ -57,7 +57,11 @@ fn main() -> Result<()> {
         if args.verbose {
             println!("\n  {}:", username);
             let secret_preview = if entry.secret.len() > 12 {
-                format!("{}...{}", &entry.secret[..8], &entry.secret[entry.secret.len()-4..])
+                format!(
+                    "{}...{}",
+                    &entry.secret[..8],
+                    &entry.secret[entry.secret.len() - 4..]
+                )
             } else {
                 entry.secret.clone()
             };
@@ -67,7 +71,10 @@ fn main() -> Result<()> {
             } else {
                 println!("    Whitelist: {}", entry.whitelist.join(", "));
             }
-            println!("    Logging: {}", if entry.logging { "enabled" } else { "disabled" });
+            println!(
+                "    Logging: {}",
+                if entry.logging { "enabled" } else { "disabled" }
+            );
         } else {
             let whitelist_info = if entry.whitelist.is_empty() {
                 String::new()

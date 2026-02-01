@@ -43,8 +43,12 @@ fn main() -> Result<()> {
     // Generate CA certificate
     let mut ca_params = CertificateParams::new(vec!["SMTP Tunnel CA".to_string()]);
     ca_params.distinguished_name = DistinguishedName::new();
-    ca_params.distinguished_name.push(DnType::OrganizationName, "SMTP Tunnel");
-    ca_params.distinguished_name.push(DnType::CommonName, "SMTP Tunnel CA");
+    ca_params
+        .distinguished_name
+        .push(DnType::OrganizationName, "SMTP Tunnel");
+    ca_params
+        .distinguished_name
+        .push(DnType::CommonName, "SMTP Tunnel CA");
     ca_params.is_ca = rcgen::IsCa::Ca(rcgen::BasicConstraints::Unconstrained);
     ca_params.key_usages = vec![
         rcgen::KeyUsagePurpose::KeyCertSign,
@@ -59,26 +63,27 @@ fn main() -> Result<()> {
     // Generate server certificate
     let mut server_params = CertificateParams::new(vec![args.hostname.clone()]);
     server_params.distinguished_name = DistinguishedName::new();
-    server_params.distinguished_name.push(DnType::OrganizationName, "SMTP Tunnel");
-    server_params.distinguished_name.push(DnType::CommonName, &args.hostname);
-    
+    server_params
+        .distinguished_name
+        .push(DnType::OrganizationName, "SMTP Tunnel");
+    server_params
+        .distinguished_name
+        .push(DnType::CommonName, &args.hostname);
+
     // Add SAN
-    server_params.subject_alt_names = vec![
-        SanType::DnsName(args.hostname.parse()?),
-    ];
+    server_params.subject_alt_names = vec![SanType::DnsName(args.hostname.parse()?)];
 
     // Set validity
     server_params.not_before = time::OffsetDateTime::now_utc();
-    server_params.not_after = server_params.not_before + Duration::from_secs(args.days * 24 * 60 * 60);
+    server_params.not_after =
+        server_params.not_before + Duration::from_secs(args.days * 24 * 60 * 60);
 
     // Key usage
     server_params.key_usages = vec![
         rcgen::KeyUsagePurpose::DigitalSignature,
         rcgen::KeyUsagePurpose::KeyEncipherment,
     ];
-    server_params.extended_key_usages = vec![
-        rcgen::ExtendedKeyUsagePurpose::ServerAuth,
-    ];
+    server_params.extended_key_usages = vec![rcgen::ExtendedKeyUsagePurpose::ServerAuth];
 
     let server_cert = Certificate::from_params(server_params)?;
 

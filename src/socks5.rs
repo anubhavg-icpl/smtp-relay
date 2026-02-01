@@ -1,5 +1,5 @@
 //! SOCKS5 Proxy Server
-//! 
+//!
 //! Implements SOCKS5 protocol (RFC 1928) for local proxy interface.
 
 use bytes::{BufMut, BytesMut};

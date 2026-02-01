@@ -48,7 +48,7 @@ impl Command {
         let s = s.trim();
         let (cmd, rest) = s.split_once(' ').unwrap_or((s, ""));
         let cmd = cmd.to_uppercase();
-        
+
         let command = match cmd.as_str() {
             "EHLO" => Self::Ehlo,
             "HELO" => Self::Helo,
@@ -61,7 +61,7 @@ impl Command {
             "BINARY" => Self::Binary,
             _ => Self::Unknown,
         };
-        
+
         (command, rest.trim())
     }
 }
@@ -108,7 +108,10 @@ impl Response {
 
     /// Greeting response
     pub fn greeting(hostname: &str) -> String {
-        Self::new(ResponseCode::READY, &format!("{hostname} ESMTP Postfix (Ubuntu)"))
+        Self::new(
+            ResponseCode::READY,
+            &format!("{hostname} ESMTP Postfix (Ubuntu)"),
+        )
     }
 
     /// EHLO response
@@ -129,7 +132,10 @@ impl Response {
 
     /// Auth success
     pub fn auth_success() -> String {
-        Self::new(ResponseCode::AUTH_SUCCESS, "2.7.0 Authentication successful")
+        Self::new(
+            ResponseCode::AUTH_SUCCESS,
+            "2.7.0 Authentication successful",
+        )
     }
 
     /// Auth failed
@@ -174,7 +180,7 @@ pub fn parse_line(line: &str) -> Option<(Command, String)> {
     if line.is_empty() {
         return None;
     }
-    
+
     let (cmd, arg) = Command::parse(line);
     Some((cmd, arg.to_string()))
 }

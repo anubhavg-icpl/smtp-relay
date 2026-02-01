@@ -1,5 +1,5 @@
 //! SMTP Tunnel Server
-//! 
+//!
 //! Accepts SMTP connections, authenticates clients, and forwards traffic.
 
 use crate::config::{ServerConfig, UsersConfig};
@@ -56,7 +56,7 @@ impl Server {
         let cert_file = tokio::fs::read(&config.cert_file).await?;
         let key_file = tokio::fs::read(&config.key_file).await?;
 
-        let certs: Vec<tokio_rustls::rustls::pki_types::CertificateDer<'static>> = 
+        let certs: Vec<tokio_rustls::rustls::pki_types::CertificateDer<'static>> =
             rustls_pemfile::certs(&mut cert_file.as_slice())
                 .collect::<Result<Vec<_>, _>>()
                 .map_err(|_| anyhow::anyhow!("Failed to parse certificate"))?;
@@ -121,7 +121,9 @@ impl Server {
         };
 
         // Send greeting
-        stream.write_all(smtp::Response::greeting(&self.config.hostname).as_bytes()).await?;
+        stream
+            .write_all(smtp::Response::greeting(&self.config.hostname).as_bytes())
+            .await?;
         session.state = smtp::State::Greeted;
 
         // Handle SMTP commands until binary mode or disconnect
@@ -148,27 +150,43 @@ impl Server {
             // Handle command
             match cmd {
                 smtp::Command::Ehlo | smtp::Command::Helo => {
-                    if session.state == smtp::State::Initial || session.state == smtp::State::Greeted {
-                        let starttls = !matches!(session.state, smtp::State::TlsStarted | smtp::State::Authenticated);
-                        stream.write_all(smtp::Response::ehlo(&self.config.hostname, starttls).as_bytes()).await?;
+                    if session.state == smtp::State::Initial
+                        || session.state == smtp::State::Greeted
+                    {
+                        let starttls = !matches!(
+                            session.state,
+                            smtp::State::TlsStarted | smtp::State::Authenticated
+                        );
+                        stream
+                            .write_all(
+                                smtp::Response::ehlo(&self.config.hostname, starttls).as_bytes(),
+                            )
+                            .await?;
                         session.state = smtp::State::Greeted;
                     } else {
-                        stream.write_all(smtp::Response::bad_sequence().as_bytes()).await?;
+                        stream
+                            .write_all(smtp::Response::bad_sequence().as_bytes())
+                            .await?;
                     }
                 }
 
                 smtp::Command::StartTls => {
                     if session.state == smtp::State::Greeted {
-                        stream.write_all(smtp::Response::starttls().as_bytes()).await?;
-                        
+                        stream
+                            .write_all(smtp::Response::starttls().as_bytes())
+                            .await?;
+
                         // Upgrade to TLS
                         let tls_stream = self.tls_acceptor.accept(stream).await?;
-                        
+
                         // Handle TLS session
-                        self.handle_tls_session(tls_stream, &mut session, addr, &mut buf).await?;
+                        self.handle_tls_session(tls_stream, &mut session, addr, &mut buf)
+                            .await?;
                         return Ok(());
                     } else {
-                        stream.write_all(smtp::Response::bad_sequence().as_bytes()).await?;
+                        stream
+                            .write_all(smtp::Response::bad_sequence().as_bytes())
+                            .await?;
                     }
                 }
 
@@ -177,7 +195,9 @@ impl Server {
                         // Parse AUTH PLAIN token
                         let parts: Vec<&str> = arg.split_whitespace().collect();
                         if parts.len() < 2 || parts[0].to_uppercase() != "PLAIN" {
-                            stream.write_all(smtp::Response::auth_failed().as_bytes()).await?;
+                            stream
+                                .write_all(smtp::Response::auth_failed().as_bytes())
+                                .await?;
                             continue;
                         }
 
@@ -188,7 +208,7 @@ impl Server {
                         let user_secrets: HashMap<String, crate::crypto::UserSecret> = users_guard
                             .users
                             .iter()
-                        .map(|(k, v)| (k.clone(), crate::crypto::UserSecret::new(&v.secret)))
+                            .map(|(k, v)| (k.clone(), crate::crypto::UserSecret::new(&v.secret)))
                             .collect();
 
                         // Check whitelist
@@ -208,59 +228,77 @@ impl Server {
 
                         if valid {
                             let username = username.unwrap();
-                            
+
                             // Check IP whitelist
                             let user_whitelist = whitelist.get(&username);
-                            let whitelisted = user_whitelist.map(|w| {
-                                if w.is_empty() {
-                                    true
-                                } else {
-                                    let client_ip = addr.ip().to_string();
-                                    w.contains(&client_ip)
-                                }
-                            }).unwrap_or(true);
+                            let whitelisted = user_whitelist
+                                .map(|w| {
+                                    if w.is_empty() {
+                                        true
+                                    } else {
+                                        let client_ip = addr.ip().to_string();
+                                        w.contains(&client_ip)
+                                    }
+                                })
+                                .unwrap_or(true);
 
                             if !whitelisted {
                                 warn!("User {} not whitelisted from IP {}", username, addr.ip());
-                                stream.write_all(smtp::Response::auth_failed().as_bytes()).await?;
+                                stream
+                                    .write_all(smtp::Response::auth_failed().as_bytes())
+                                    .await?;
                                 continue;
                             }
 
                             session.username = Some(username.clone());
                             session.state = smtp::State::Authenticated;
-                            stream.write_all(smtp::Response::auth_success().as_bytes()).await?;
+                            stream
+                                .write_all(smtp::Response::auth_success().as_bytes())
+                                .await?;
                             info!("User {} authenticated from {}", username, addr);
                         } else {
                             warn!("Authentication failed from {}", addr);
-                            stream.write_all(smtp::Response::auth_failed().as_bytes()).await?;
+                            stream
+                                .write_all(smtp::Response::auth_failed().as_bytes())
+                                .await?;
                         }
                     } else {
-                        stream.write_all(smtp::Response::bad_sequence().as_bytes()).await?;
+                        stream
+                            .write_all(smtp::Response::bad_sequence().as_bytes())
+                            .await?;
                     }
                 }
 
                 smtp::Command::Binary => {
                     if session.state == smtp::State::Authenticated {
-                        stream.write_all(smtp::Response::binary_mode().as_bytes()).await?;
+                        stream
+                            .write_all(smtp::Response::binary_mode().as_bytes())
+                            .await?;
                         session.state = smtp::State::BinaryMode;
                         session.binary_mode = true;
-                        
+
                         // For non-TLS, we still handle binary mode
                         // In this simplified version, we just end the session
                         info!("Binary mode requested but not fully implemented for non-TLS");
                         break;
                     } else {
-                        stream.write_all(smtp::Response::auth_failed().as_bytes()).await?;
+                        stream
+                            .write_all(smtp::Response::auth_failed().as_bytes())
+                            .await?;
                     }
                 }
 
                 smtp::Command::Quit => {
-                    stream.write_all(smtp::Response::goodbye().as_bytes()).await?;
+                    stream
+                        .write_all(smtp::Response::goodbye().as_bytes())
+                        .await?;
                     break;
                 }
 
                 _ => {
-                    stream.write_all(smtp::Response::command_unrecognized().as_bytes()).await?;
+                    stream
+                        .write_all(smtp::Response::command_unrecognized().as_bytes())
+                        .await?;
                 }
             }
         }
@@ -300,14 +338,18 @@ impl Server {
             // Handle command
             match cmd {
                 smtp::Command::Ehlo | smtp::Command::Helo => {
-                    stream.write_all(smtp::Response::ehlo(&self.config.hostname, false).as_bytes()).await?;
+                    stream
+                        .write_all(smtp::Response::ehlo(&self.config.hostname, false).as_bytes())
+                        .await?;
                 }
 
                 smtp::Command::Auth => {
                     // Parse AUTH PLAIN token
                     let parts: Vec<&str> = arg.split_whitespace().collect();
                     if parts.len() < 2 || parts[0].to_uppercase() != "PLAIN" {
-                        stream.write_all(smtp::Response::auth_failed().as_bytes()).await?;
+                        stream
+                            .write_all(smtp::Response::auth_failed().as_bytes())
+                            .await?;
                         continue;
                     }
 
@@ -338,55 +380,71 @@ impl Server {
 
                     if valid {
                         let username = username.unwrap();
-                        
+
                         // Check IP whitelist
                         let user_whitelist = whitelist.get(&username);
-                        let whitelisted = user_whitelist.map(|w| {
-                            if w.is_empty() {
-                                true
-                            } else {
-                                let client_ip = addr.ip().to_string();
-                                w.contains(&client_ip)
-                            }
-                        }).unwrap_or(true);
+                        let whitelisted = user_whitelist
+                            .map(|w| {
+                                if w.is_empty() {
+                                    true
+                                } else {
+                                    let client_ip = addr.ip().to_string();
+                                    w.contains(&client_ip)
+                                }
+                            })
+                            .unwrap_or(true);
 
                         if !whitelisted {
                             warn!("User {} not whitelisted from IP {}", username, addr.ip());
-                            stream.write_all(smtp::Response::auth_failed().as_bytes()).await?;
+                            stream
+                                .write_all(smtp::Response::auth_failed().as_bytes())
+                                .await?;
                             continue;
                         }
 
                         session.username = Some(username.clone());
                         session.state = smtp::State::Authenticated;
-                        stream.write_all(smtp::Response::auth_success().as_bytes()).await?;
+                        stream
+                            .write_all(smtp::Response::auth_success().as_bytes())
+                            .await?;
                         info!("User {} authenticated from {} (TLS)", username, addr);
                     } else {
                         warn!("Authentication failed from {}", addr);
-                        stream.write_all(smtp::Response::auth_failed().as_bytes()).await?;
+                        stream
+                            .write_all(smtp::Response::auth_failed().as_bytes())
+                            .await?;
                     }
                 }
 
                 smtp::Command::Binary => {
                     if session.state == smtp::State::Authenticated {
-                        stream.write_all(smtp::Response::binary_mode().as_bytes()).await?;
+                        stream
+                            .write_all(smtp::Response::binary_mode().as_bytes())
+                            .await?;
                         session.state = smtp::State::BinaryMode;
                         session.binary_mode = true;
-                        
+
                         // Enter binary mode
                         self.handle_binary_mode_tls(stream, session.clone()).await?;
                         break;
                     } else {
-                        stream.write_all(smtp::Response::auth_failed().as_bytes()).await?;
+                        stream
+                            .write_all(smtp::Response::auth_failed().as_bytes())
+                            .await?;
                     }
                 }
 
                 smtp::Command::Quit => {
-                    stream.write_all(smtp::Response::goodbye().as_bytes()).await?;
+                    stream
+                        .write_all(smtp::Response::goodbye().as_bytes())
+                        .await?;
                     break;
                 }
 
                 _ => {
-                    stream.write_all(smtp::Response::command_unrecognized().as_bytes()).await?;
+                    stream
+                        .write_all(smtp::Response::command_unrecognized().as_bytes())
+                        .await?;
                 }
             }
         }
@@ -408,7 +466,10 @@ impl Server {
             drop(channel);
         }
 
-        info!("Session ended for {:?} from {}", session.username, session.client_addr);
+        info!(
+            "Session ended for {:?} from {}",
+            session.username, session.client_addr
+        );
 
         Ok(())
     }

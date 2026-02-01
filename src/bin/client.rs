@@ -51,10 +51,12 @@ async fn main() -> Result<()> {
     let args = Args::parse();
 
     // Initialize logging
-    let level = if args.debug { Level::DEBUG } else { Level::INFO };
-    let subscriber = FmtSubscriber::builder()
-        .with_max_level(level)
-        .finish();
+    let level = if args.debug {
+        Level::DEBUG
+    } else {
+        Level::INFO
+    };
+    let subscriber = FmtSubscriber::builder().with_max_level(level).finish();
     tracing::subscriber::set_global_default(subscriber)?;
 
     // Load or create config
