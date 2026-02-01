@@ -1,0 +1,100 @@
+[package]
+name = "smtp-tunnel"
+version = "2.0.0"
+edition = "2021"
+authors = ["SMTP Tunnel Team"]
+description = "High-speed covert tunnel that disguises TCP traffic as SMTP email communication"
+license = "MIT"
+repository = "https://github.com/yourusername/smtp-tunnel-rs"
+keywords = ["smtp", "tunnel", "proxy", "socks5", "dpi-evasion"]
+categories = ["network-programming", "command-line-utilities"]
+
+[[bin]]
+name = "smtp-tunnel-server"
+path = "src/bin/server.rs"
+
+[[bin]]
+name = "smtp-tunnel-client"
+path = "src/bin/client.rs"
+
+[[bin]]
+name = "smtp-tunnel-gen-certs"
+path = "src/bin/gen_certs.rs"
+
+[[bin]]
+name = "smtp-tunnel-adduser"
+path = "src/bin/adduser.rs"
+
+[[bin]]
+name = "smtp-tunnel-deluser"
+path = "src/bin/deluser.rs"
+
+[[bin]]
+name = "smtp-tunnel-listusers"
+path = "src/bin/listusers.rs"
+
+[dependencies]
+# Async runtime
+tokio = { version = "1.35", features = ["full"] }
+tokio-util = { version = "0.7", features = ["codec", "net"] }
+
+# TLS
+tokio-rustls = "0.25"
+rustls = "0.22"
+rustls-pemfile = "2.0"
+rcgen = { version = "0.12", features = ["pem", "x509-parser"] }
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_yaml = "0.9"
+
+# Cryptography
+ring = "0.17"
+hmac = "0.12"
+sha2 = "0.10"
+chacha20poly1305 = "0.10"
+hkdf = "0.12"
+
+# Encoding
+base64 = "0.21"
+hex = "0.4"
+
+# Networking
+bytes = "1.5"
+
+# CLI
+clap = { version = "4.4", features = ["derive"] }
+
+# Logging & Tracing
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt"] }
+
+# Error handling
+thiserror = "1.0"
+anyhow = "1.0"
+
+# IP parsing
+ipnet = "2.9"
+
+# Time
+time = "0.3"
+
+# Random
+rand = "0.8"
+
+# ZIP creation (for client packages)
+zip = { version = "0.6", default-features = false, features = ["deflate"] }
+walkdir = "2.4"
+tempfile = "3.8"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+strip = true
+panic = "abort"
+
+[profile.release-with-debug]
+inherits = "release"
+strip = false
+debug = true
