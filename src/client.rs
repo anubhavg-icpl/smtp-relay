@@ -98,7 +98,7 @@ impl Client {
             let port = req.port;
             async move {
                 // Connect directly for now (simplified)
-                let addr = format!("{}:{}", host, port);
+                let addr = format!("{host}:{port}");
                 match TcpStream::connect(&addr).await {
                     Ok(stream) => {
                         let local_addr = stream.local_addr()?;
@@ -126,7 +126,7 @@ impl Client {
             .ok_or_else(|| anyhow::anyhow!("Server closed connection"))?;
 
         if !line.starts_with("220") {
-            return Err(anyhow::anyhow!("Unexpected greeting: {}", line));
+            return Err(anyhow::anyhow!("Unexpected greeting: {line}"));
         }
         debug!("Server greeting: {}", line);
 
@@ -145,7 +145,7 @@ impl Client {
                 break;
             }
             if !line.starts_with("250-") {
-                return Err(anyhow::anyhow!("EHLO failed: {}", line));
+                return Err(anyhow::anyhow!("EHLO failed: {line}"));
             }
         }
 
@@ -157,7 +157,7 @@ impl Client {
             .ok_or_else(|| anyhow::anyhow!("Server closed connection"))?;
 
         if !line.starts_with("220") {
-            return Err(anyhow::anyhow!("STARTTLS failed: {}", line));
+            return Err(anyhow::anyhow!("STARTTLS failed: {line}"));
         }
         debug!("STARTTLS response: {}", line);
 
@@ -179,14 +179,14 @@ impl Client {
                 break;
             }
             if !line.starts_with("250-") {
-                return Err(anyhow::anyhow!("EHLO (post-TLS) failed: {}", line));
+                return Err(anyhow::anyhow!("EHLO (post-TLS) failed: {line}"));
             }
         }
 
         // 6. AUTH
         let token = AuthToken::generate_now(&self.config.secret, &self.config.username);
         stream
-            .write_all(format!("AUTH PLAIN {}\r\n", token).as_bytes())
+            .write_all(format!("AUTH PLAIN {token}\r\n").as_bytes())
             .await?;
         let line = self
             .read_smtp_line(&mut stream, &mut buf)
@@ -194,7 +194,7 @@ impl Client {
             .ok_or_else(|| anyhow::anyhow!("Server closed connection"))?;
 
         if !line.starts_with("235") {
-            return Err(anyhow::anyhow!("Authentication failed: {}", line));
+            return Err(anyhow::anyhow!("Authentication failed: {line}"));
         }
         debug!("Auth success: {}", line);
 
@@ -206,7 +206,7 @@ impl Client {
             .ok_or_else(|| anyhow::anyhow!("Server closed connection"))?;
 
         if !line.starts_with("299") {
-            return Err(anyhow::anyhow!("Binary mode failed: {}", line));
+            return Err(anyhow::anyhow!("Binary mode failed: {line}"));
         }
         debug!("Binary mode active: {}", line);
 

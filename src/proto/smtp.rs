@@ -83,7 +83,7 @@ pub struct Response;
 impl Response {
     /// Create a simple response
     pub fn new(code: ResponseCode, message: &str) -> String {
-        format!("{} {}\r\n", code, message)
+        format!("{code} {message}\r\n")
     }
 
     /// Create a multi-line response (last line has space after code)
@@ -98,9 +98,9 @@ impl Response {
         let mut result = String::new();
         for (i, line) in lines.iter().enumerate() {
             if i < lines.len() - 1 {
-                result.push_str(&format!("{}-{line}\r\n", code));
+                result.push_str(&format!("{code}-{line}\r\n"));
             } else {
-                result.push_str(&format!("{} {line}\r\n", code));
+                result.push_str(&format!("{code} {line}\r\n"));
             }
         }
         result

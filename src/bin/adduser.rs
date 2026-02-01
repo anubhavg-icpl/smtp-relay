@@ -263,7 +263,7 @@ fn create_client_package(
     fs::write(&start_bat_path, start_bat)?;
 
     // Create ZIP file
-    let zip_filename = format!("{}.zip", username);
+    let zip_filename = format!("{username}.zip");
     let zip_path = output_dir.join(&zip_filename);
 
     let file = fs::File::create(&zip_path)?;

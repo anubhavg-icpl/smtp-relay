@@ -100,12 +100,14 @@ pub struct UserEntry {
 
 /// Users configuration file
 #[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Default)]
 pub struct UsersConfig {
     pub users: HashMap<String, UserEntry>,
 }
 
 /// Full configuration file (server + client)
 #[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Default)]
 pub struct Config {
     #[serde(default)]
     pub server: ServerConfig,
@@ -163,22 +165,7 @@ impl Config {
     }
 }
 
-impl Default for Config {
-    fn default() -> Self {
-        Self {
-            server: ServerConfig::default(),
-            client: ClientConfig::default(),
-        }
-    }
-}
 
-impl Default for UsersConfig {
-    fn default() -> Self {
-        Self {
-            users: HashMap::new(),
-        }
-    }
-}
 
 impl UsersConfig {
     /// Load users from file

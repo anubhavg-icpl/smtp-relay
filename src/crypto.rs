@@ -22,7 +22,7 @@ impl AuthToken {
         mac.update(message.as_bytes());
         let result = mac.finalize();
         let hmac_bytes = result.into_bytes();
-        let hmac_b64 = BASE64.encode(&hmac_bytes);
+        let hmac_b64 = BASE64.encode(hmac_bytes);
 
         let token = format!("{username}:{timestamp}:{hmac_b64}");
         BASE64.encode(token.as_bytes())
@@ -71,7 +71,7 @@ impl AuthToken {
 
         // Verify HMAC
         let expected = Self::generate(secret, username, timestamp);
-        let valid = expected.as_bytes().len() == token_b64.as_bytes().len()
+        let valid = expected.len() == token_b64.len()
             && expected
                 .as_bytes()
                 .iter()
@@ -127,7 +127,7 @@ impl AuthToken {
 
         // Verify HMAC
         let expected = Self::generate(&user.secret, username, timestamp);
-        let valid = expected.as_bytes().len() == token_b64.as_bytes().len()
+        let valid = expected.len() == token_b64.len()
             && expected
                 .as_bytes()
                 .iter()

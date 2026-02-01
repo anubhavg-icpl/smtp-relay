@@ -72,8 +72,7 @@ fn main() -> Result<()> {
     let zip_file = format!("{}.zip", args.username);
     if std::path::Path::new(&zip_file).exists() {
         println!(
-            "Note: Client package '{}' still exists - delete manually if needed",
-            zip_file
+            "Note: Client package '{zip_file}' still exists - delete manually if needed"
         );
     }
 

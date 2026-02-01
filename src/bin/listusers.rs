@@ -55,7 +55,7 @@ fn main() -> Result<()> {
 
     for (username, entry) in user_list {
         if args.verbose {
-            println!("\n  {}:", username);
+            println!("\n  {username}:");
             let secret_preview = if entry.secret.len() > 12 {
                 format!(
                     "{}...{}",
@@ -65,7 +65,7 @@ fn main() -> Result<()> {
             } else {
                 entry.secret.clone()
             };
-            println!("    Secret: {}", secret_preview);
+            println!("    Secret: {secret_preview}");
             if entry.whitelist.is_empty() {
                 println!("    Whitelist: (any IP)");
             } else {
@@ -82,7 +82,7 @@ fn main() -> Result<()> {
                 format!(" [{} IPs]", entry.whitelist.len())
             };
             let logging_info = if !entry.logging { " [no-log]" } else { "" };
-            println!("  {}{}{}", username, whitelist_info, logging_info);
+            println!("  {username}{whitelist_info}{logging_info}");
         }
     }
 
