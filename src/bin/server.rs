@@ -2,7 +2,7 @@
 
 use anyhow::Result;
 use clap::Parser;
-use smtp_tunnel::config::{Config, ServerConfig, UsersConfig};
+use smtp_tunnel::config::{Config, UsersConfig};
 use std::path::PathBuf;
 use tracing::{info, Level};
 use tracing_subscriber::FmtSubscriber;
