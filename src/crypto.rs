@@ -179,7 +179,11 @@ mod tests {
     fn test_token_generate_verify() {
         let secret = "test-secret-123";
         let username = "alice";
-        let timestamp = 1234567890;
+        // Use a recent timestamp (within last 5 minutes)
+        let timestamp = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_secs();
 
         let token = AuthToken::generate(secret, username, timestamp);
         let (valid, user) = AuthToken::verify(&token, secret, 300);
