@@ -99,15 +99,13 @@ pub struct UserEntry {
 }
 
 /// Users configuration file
-#[derive(Debug, Clone, Deserialize, Serialize)]
-#[derive(Default)]
+#[derive(Debug, Clone, Deserialize, Serialize, Default)]
 pub struct UsersConfig {
     pub users: HashMap<String, UserEntry>,
 }
 
 /// Full configuration file (server + client)
-#[derive(Debug, Clone, Deserialize, Serialize)]
-#[derive(Default)]
+#[derive(Debug, Clone, Deserialize, Serialize, Default)]
 pub struct Config {
     #[serde(default)]
     pub server: ServerConfig,
@@ -164,8 +162,6 @@ impl Config {
         Ok(())
     }
 }
-
-
 
 impl UsersConfig {
     /// Load users from file

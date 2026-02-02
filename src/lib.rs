@@ -22,7 +22,7 @@ pub mod socks5;
 
 // Re-export commonly used items
 pub use config::{ClientConfig, Config, ServerConfig, UserEntry, UsersConfig};
-pub use crypto::{generate_secret, AuthToken};
+pub use crypto::{AuthToken, generate_secret};
 pub use proto::{Frame, FrameType};
 
 use thiserror::Error;

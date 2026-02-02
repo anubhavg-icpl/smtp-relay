@@ -4,7 +4,7 @@ use anyhow::Result;
 use clap::Parser;
 use smtp_tunnel::config::{ClientConfig, Config};
 use std::path::PathBuf;
-use tracing::{info, Level};
+use tracing::{Level, info};
 use tracing_subscriber::FmtSubscriber;
 
 /// SMTP Tunnel Client
