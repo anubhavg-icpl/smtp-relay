@@ -1,209 +1,145 @@
-# 🦀 SMTP Tunnel Proxy - Rust Implementation
+<div align="center">
 
-> A high-speed covert tunnel that disguises TCP traffic as SMTP email communication to bypass Deep Packet Inspection (DPI) firewalls.
+# 🦀 SMTP Tunnel Proxy
 
-**Rust rewrite** of the original Python SMTP Tunnel Proxy with improved performance, memory safety, and smaller binaries.
+[![Author](https://img.shields.io/badge/Author-anubhavg--icpl-blue?style=flat-square)](https://github.com/anubhavg-icpl)
+[![Email](https://img.shields.io/badge/Email-anubhavg%40infopercept.com-red?style=flat-square)](mailto:anubhavg@infopercept.com)
+[![Version](https://img.shields.io/badge/Version-2.0.0-green?style=flat-square)]()
+[![License](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)]()
 
-[![Author](https://img.shields.io/badge/Author-anubhavg--icpl-blue)](https://github.com/anubhavg-icpl)
-[![Email](https://img.shields.io/badge/Email-anubhavg%40infopercept.com-red)](mailto:anubhavg@infopercept.com)
-[![Version](https://img.shields.io/badge/Version-2.0.0-green)]()
-[![License](https://img.shields.io/badge/License-MIT-yellow)]()
+**High-speed covert tunnel disguising TCP traffic as SMTP to bypass DPI firewalls**
 
----
-
-## 🎯 Features
-
-| Feature | Description |
-|---------|-------------|
-| 🔒 **TLS 1.3** | Modern encryption with rustls |
-| 🎭 **DPI Evasion** | Mimics real Postfix SMTP servers |
-| ⚡ **Zero-Cost Async** | Handle thousands of connections with tokio |
-| 👥 **Multi-User** | Per-user secrets and IP whitelists |
-| 🔑 **HMAC Auth** | Time-based authentication tokens |
-| 🌐 **SOCKS5 Proxy** | Standard proxy interface |
-| 📡 **Multiplexing** | Multiple connections over single tunnel |
-| 🦀 **Memory Safe** | No buffer overflows, no segfaults |
-| 📦 **Static Binary** | Single executable, no runtime needed |
+</div>
 
 ---
 
-## 📊 Performance vs Python
+## Overview
 
-| Metric | Python | Rust | Improvement |
-|--------|--------|------|-------------|
-| **Binary Size** | ~50MB + deps | ~1-2MB | **10x smaller** |
-| **Memory Usage** | ~50MB base | ~5MB base | **10x less** |
-| **Speed** | ~100 Mbps | ~1 Gbps | **10x faster** |
-| **Latency** | GC pauses | Predictable | **No pauses** |
-| **Safety** | Runtime errors | Compile-time | **Memory safe** |
+SMTP Tunnel Proxy is a high-performance network tunnel that masks your TCP traffic as legitimate SMTP email communication. It provides a secure SOCKS5 proxy interface that tunnels through port 587 (standard SMTP submission port), making it nearly impossible for Deep Packet Inspection (DPI) systems to detect or block.
+
+Built with **Rust** for maximum performance, memory safety, and minimal resource usage.
 
 ---
 
-## 🚀 Quick Start
+## Features
 
-### Installation
+<table>
+<tr>
+<td>
 
-```bash
-# One-liner installation
-curl -sSL https://raw.githubusercontent.com/yourusername/smtp-tunnel-rs/main/install.sh | sudo bash
+🔒 **TLS 1.3 Encryption**  
+Modern encryption powered by rustls
 
-# Or download pre-built binaries from releases
-wget https://github.com/yourusername/smtp-tunnel-rs/releases/latest/download/smtp-tunnel-server-linux-x86_64
-wget https://github.com/yourusername/smtp-tunnel-rs/releases/latest/download/smtp-tunnel-client-linux-x86_64
-chmod +x smtp-tunnel-*
+⚡ **Zero-Cost Async**  
+Handle thousands of connections with tokio
+
+👥 **Multi-User Support**  
+Per-user secrets and IP whitelists
+
+🌐 **SOCKS5 Proxy**  
+Standard proxy interface (RFC 1928)
+
+</td>
+<td>
+
+🎭 **DPI Evasion**  
+Mimics real Postfix SMTP servers
+
+🔑 **HMAC-SHA256 Auth**  
+Time-based tokens with anti-replay
+
+📡 **Connection Multiplexing**  
+Multiple connections over single tunnel
+
+🦀 **Memory Safe**  
+No buffer overflows, no segfaults
+
+</td>
+</tr>
+</table>
+
+---
+
+## Architecture
+
+```
+┌──────────────────┐      ┌──────────────────┐      ┌──────────────────┐
+│   Browser/curl   │─────▶│  SOCKS5 Proxy    │─────▶│   SMTP Client    │
+│                  │ TCP  │  127.0.0.1:1080  │      │   (Rust/tokio)   │
+└──────────────────┘      └──────────────────┘      └────────┬─────────┘
+                                                             │
+                                                             │ TLS + SMTP
+                                                             │ on Port 587
+                                                             ▼
+┌──────────────────┐      ┌──────────────────┐      ┌──────────────────┐
+│    Internet      │◀─────│   SMTP Server    │◀─────│   Your Server    │
+│   (Any TCP)      │      │   (Rust/tokio)   │      │   (VPS/Dedi)     │
+└──────────────────┘      └──────────────────┘      └──────────────────┘
 ```
 
-### Server Setup (VPS)
+---
+
+## Quick Start
+
+### Server Installation (VPS)
 
 ```bash
-# 1. Generate TLS certificates
+# Download and install
+curl -sSL https://raw.githubusercontent.com/anubhavg-icpl/smtp-relay/main/install.sh | sudo bash
+
+# Generate certificates
 smtp-tunnel-gen-certs --hostname mail.example.com
 
-# 2. Add a user
+# Create a user
 smtp-tunnel-adduser alice
 
-# 3. Start server
-smtp-tunnel-server -c config.yaml
-
-# Or use systemd
+# Start the server
 systemctl start smtp-tunnel
 ```
 
-### Client Setup
+### Client Usage
 
 ```bash
-# Get the client package from your server admin (alice.zip)
-unzip alice.zip
-cd alice
+# Extract the client package (alice.zip from server)
+unzip alice.zip && cd alice
 
-# Run client
-./smtp-tunnel-client -c config.yaml
+# Run the client
+./start.sh
 
-# Or use the launcher
-./start.sh  # Linux/Mac
-start.bat   # Windows
-
-# Test
+# Test the connection
 curl -x socks5h://127.0.0.1:1080 https://ifconfig.me
 ```
 
 ---
 
-## 📦 Binaries
+## Binaries
 
-| Binary | Size | Purpose |
-|--------|------|---------|
-| `smtp-tunnel-server` | ~1.6M | Tunnel server (runs on VPS) |
-| `smtp-tunnel-client` | ~1M | SOCKS5 proxy client |
-| `smtp-tunnel-gen-certs` | ~900K | TLS certificate generator |
-| `smtp-tunnel-adduser` | ~900K | Add users & create packages |
-| `smtp-tunnel-deluser` | ~700K | Remove users |
-| `smtp-tunnel-listusers` | ~700K | List all users |
-
----
-
-## 🏗️ Architecture
-
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                         CLIENT COMPUTER                             │
-│  ┌──────────────┐      ┌──────────────┐      ┌─────────────────┐   │
-│  │   Browser    │─────▶│  SOCKS5      │─────▶│   SMTP Client   │   │
-│  │   curl, etc  │      │  127.0.0.1   │      │   (Rust/tokio)  │   │
-│  └──────────────┘      │   :1080      │      └────────┬────────┘   │
-│                        └──────────────┘               │            │
-│                                                       │ TLS Tunnel │
-│                                                       ▼            │
-│                                               ┌──────────────┐     │
-│                                               │  smtp-tunnel │─────┼────▶
-│                                               │  -client     │     │
-│                                               └──────────────┘     │
-└─────────────────────────────────────────────────────────────────────┘
-                                     │
-                                     │ Port 587 (looks like SMTP)
-                                     ▼
-┌─────────────────────────────────────────────────────────────────────┐
-│                         SERVER (VPS)                                │
-│                                               ┌──────────────┐      │
-│  ◀────────────────────────────────────────────│  SMTP Server │      │
-│                                               │  (Rust/tokio)│      │
-│                                               └──────┬───────┘      │
-│                                                      │               │
-│                                                      │ Forward       │
-│                                                      ▼               │
-│                                               ┌──────────────┐      │
-│                                               │   Internet   │      │
-│                                               │   (Any TCP)  │      │
-│                                               └──────────────┘      │
-└─────────────────────────────────────────────────────────────────────┘
-```
+| Binary | Size | Description |
+|--------|------|-------------|
+| `smtp-tunnel-server` | ~1.6 MB | Tunnel server (runs on VPS) |
+| `smtp-tunnel-client` | ~1.0 MB | SOCKS5 proxy client |
+| `smtp-tunnel-gen-certs` | ~0.9 MB | TLS certificate generator |
+| `smtp-tunnel-adduser` | ~0.9 MB | User management tool |
+| `smtp-tunnel-deluser` | ~0.7 MB | Remove users |
+| `smtp-tunnel-listusers` | ~0.7 MB | List all users |
 
 ---
 
-## 🔧 Command Reference
+## Performance
 
-### smtp-tunnel-server
-
-```
-SMTP Tunnel Server
-
-Usage: smtp-tunnel-server [OPTIONS]
-
-Options:
-  -c, --config <FILE>     Configuration file [default: config.yaml]
-  -u, --users <FILE>      Users file
-  -d, --debug             Enable debug logging
-  -h, --help              Print help
-  -V, --version           Print version
-```
-
-### smtp-tunnel-client
-
-```
-SMTP Tunnel Client
-
-Usage: smtp-tunnel-client [OPTIONS]
-
-Options:
-  -c, --config <FILE>     Configuration file [default: config.yaml]
-      --server <HOST>     Server hostname
-      --server-port <PORT> Server port
-  -p, --socks-port <PORT> Local SOCKS port
-  -u, --username <NAME>   Username
-  -s, --secret <SECRET>   Secret
-      --ca-cert <FILE>    CA certificate file
-  -d, --debug             Enable debug logging
-  -h, --help              Print help
-  -V, --version           Print version
-```
-
-### smtp-tunnel-adduser
-
-```
-Add a new user and generate client package
-
-Usage: smtp-tunnel-adduser [OPTIONS] <USERNAME>
-
-Arguments:
-  <USERNAME>  Username to add
-
-Options:
-  -s, --secret <SECRET>          Secret (auto-generated if not provided)
-  -w, --whitelist <WHITELIST>    IP whitelist (can specify multiple)
-      --no-logging               Disable logging for this user
-  -u, --users-file <USERS_FILE>  Users file [default: /etc/smtp-tunnel/users.yaml]
-  -c, --config <CONFIG>          Server config file [default: /etc/smtp-tunnel/config.yaml]
-  -o, --output-dir <OUTPUT_DIR>  Output directory for ZIP file [default: .]
-      --no-package               Do not generate client ZIP package
-  -h, --help                     Print help
-  -V, --version                  Print version
-```
+<table>
+<tr><td>Binary Size</td><td>~1-2 MB</td><td>Minimal footprint</td></tr>
+<tr><td>Memory Usage</td><td>~5 MB base</td><td>Efficient resource usage</td></tr>
+<tr><td>Throughput</td><td>~1 Gbps</td><td>Limited by network</td></tr>
+<tr><td>Latency</td><td>Predictable</td><td>No GC pauses</td></tr>
+<tr><td>Safety</td><td>Compile-time</td><td>Memory safe (Rust)</td></tr>
+</table>
 
 ---
 
-## 📁 Configuration
+## Configuration
 
-### Server Config (`config.yaml`)
+### Server (`/etc/smtp-tunnel/config.yaml`)
 
 ```yaml
 server:
@@ -223,7 +159,7 @@ client:
   ca_cert: "/etc/smtp-tunnel/ca.crt"
 ```
 
-### Users File (`users.yaml`)
+### Users (`/etc/smtp-tunnel/users.yaml`)
 
 ```yaml
 users:
@@ -237,75 +173,66 @@ users:
   bob:
     secret: "another-secret"
     logging: false
-    whitelist: []  # Allow from any IP
+    whitelist: []  # Allow any IP
 ```
 
 ---
 
-## 🛠️ Building from Source
+## Building from Source
 
 ```bash
 # Install Rust
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 
-# Clone repository
-git clone https://github.com/yourusername/smtp-tunnel-rs
-cd smtp-tunnel-rs
-
-# Build release binaries
+# Clone and build
+git clone https://github.com/anubhavg-icpl/smtp-relay
+cd smtp-relay
 cargo build --release
 
-# Binaries will be in target/release/
-ls -la target/release/smtp-tunnel-*
-```
-
-### Cross-compilation
-
-```bash
-# Install cross
-cargo install cross
-
-# Build for different targets
-cross build --release --target x86_64-unknown-linux-musl
-cross build --release --target aarch64-unknown-linux-musl
-cross build --release --target x86_64-pc-windows-gnu
+# Binaries in target/release/
 ```
 
 ---
 
-## 🔐 Security Features
+## How It Works
 
-- **TLS 1.3** encryption for all traffic
-- **HMAC-SHA256** authentication with time-based tokens (anti-replay)
-- **Certificate pinning** support (ca_cert)
-- **IP whitelisting** per user with CIDR support
-- **Memory safety** guaranteed by Rust (no buffer overflows)
-- **Constant-time** comparison for secrets
-
----
-
-## 📋 Protocol
-
-1. **SMTP Handshake**: Client connects, server responds with Postfix-style greeting
-2. **STARTTLS**: Connection upgrades to TLS
-3. **Authentication**: HMAC-SHA256 token with timestamp
-4. **Binary Mode**: Switch to fast binary frame protocol
-5. **Tunneling**: SOCKS5 requests forwarded through encrypted tunnel
+1. **Connection**: Client connects to server on port 587 (standard SMTP submission)
+2. **SMTP Handshake**: Server presents itself as Postfix mail server
+3. **STARTTLS**: Connection upgrades to TLS 1.3 encryption
+4. **Authentication**: Client authenticates with HMAC-SHA256 token (time-based, anti-replay)
+5. **Binary Mode**: After auth, switches to fast binary frame protocol
+6. **Tunneling**: SOCKS5 requests forwarded through encrypted tunnel to destination
 
 ---
 
-## 📝 License
+## Security
+
+- **TLS 1.3** for transport encryption
+- **HMAC-SHA256** authentication with 5-minute token expiration
+- **Certificate pinning** support
+- **IP whitelisting** per user with CIDR notation
+- **Memory safety** guaranteed by Rust's ownership model
+- **Constant-time** secret comparison
+
+---
+
+## License
 
 MIT License - See [LICENSE](LICENSE) file
 
 ---
 
-## 👤 Author
+## Author
 
 **Anubhav Gain** ([@anubhavg-icpl](https://github.com/anubhavg-icpl))
+
 - Email: [anubhavg@infopercept.com](mailto:anubhavg@infopercept.com)
 - Company: [InfoPercept Consulting Pvt Ltd](https://www.infopercept.com)
 
 ---
 
+<div align="center">
+
 *Made with 🦀 for internet freedom*
+
+</div>
